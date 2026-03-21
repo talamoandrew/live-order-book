@@ -1,0 +1,8 @@
+{
+    "name": "live-order-book",
+    "dependencies": [
+        "ixwebsocket",
+        "nlohmann-json",
+        "uwebsockets"
+    ]
+}

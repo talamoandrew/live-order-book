@@ -1,0 +1,6 @@
+server/build/
+server/vcpkg/
+node_modules/
+client/dist/
+*.o
+*.a
