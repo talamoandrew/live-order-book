@@ -52,6 +52,13 @@ void Server::start(int port)
         .maxBackpressure = 1 * 1024 * 1024,
         .open = [this](WsClient ws)
         {
+            if (connectionCount >= MAX_CONNECTIONS)
+            {
+                ws->close();
+                return;
+            }
+            connectionCount++;
+
             if (!loop) loop = uWS::Loop::get();
             std::cout << "Client connected!" << std::endl;
             {
@@ -76,8 +83,17 @@ void Server::start(int port)
                 if (j.contains("action") && j["action"] == "subscribe")
                 {
                     std::string symbol = j["symbol"].get<std::string>();
+
+                    static const std::set<std::string> validSymbols = {"btcusdt", "ethusdt", "solusdt", "bnbusdt"};
+
+                    if (validSymbols.count(symbol) == 0)
+                    {
+                        std::cout << "Invalid symbol: " << symbol <<std::endl;
+                        return;
+                    }
                     std::lock_guard<std::mutex> lock(symbolController.mux);
                     symbolController.pending = symbol;
+                    std::cout << "Pending symbol: " << symbol <<std::endl;
                 }
             }
             catch (const std::exception& e)
@@ -88,6 +104,7 @@ void Server::start(int port)
         },
         .close = [this](WsClient ws, int code, std::string_view msg)
         {
+            connectionCount--;
             std::lock_guard<std::mutex> lock(clientMux);
             clients.erase(ws);
         }

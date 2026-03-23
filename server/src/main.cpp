@@ -108,6 +108,8 @@ int main()
  
     serverThread.detach();
 
+    auto lastReconnect = std::chrono::steady_clock::now();
+
     while (true) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         
@@ -115,20 +117,31 @@ int main()
             std::lock_guard<std::mutex> lock(symbolController.mux);
             if (!symbolController.pending.empty())
             {
-                std::string newSymbol = symbolController.pending;
-                symbolController.pending = "";
-                symbolController.current = newSymbol;
-                
-                webSocket.stop();
-                std::string newUrl = std::string("wss://stream.binance.us:9443/ws/") 
-                                + newSymbol 
-                                + "@depth@100ms";
-                book.clear();
-                webSocket.setUrl(newUrl);
-                sendSnapshot = true;
-                webSocket.start();
-                latencySamples.clear();
-                std::cout << "Reconnected to: " << newSymbol << std::endl;
+                auto now = std::chrono::steady_clock::now();
+                auto deltaReconnectTime = std::chrono::duration_cast<std::chrono::seconds>(now - lastReconnect).count();
+
+                if (deltaReconnectTime >= 5)
+                {
+                    lastReconnect = now;
+                    std::string newSymbol = symbolController.pending;
+                    symbolController.pending = "";
+                    symbolController.current = newSymbol;
+                    
+                    webSocket.stop();
+                    std::string newUrl = std::string("wss://stream.binance.us:9443/ws/") 
+                                    + newSymbol 
+                                    + "@depth@100ms";
+                    book.clear();
+                    webSocket.setUrl(newUrl);
+                    sendSnapshot = true;
+                    webSocket.start();
+                    latencySamples.clear();
+                    std::cout << "Reconnected to: " << newSymbol << std::endl;
+                }
+                else
+                {
+                    std::cout << "Symbol change cooldown, ignoring change" << std::endl;
+                }
             }
         }
     }

@@ -5,6 +5,8 @@
 #include <queue>
 #include <mutex>
 #include <string>
+#include <atomic>
+#include <set>
 #include "OrderBook.h"
 #include "SymbolController.h"
 
@@ -25,4 +27,6 @@ private:
     std::mutex qMux;
     std::queue<std::string> q;
     uWS::Loop* loop = nullptr;
+    std::atomic<int> connectionCount{0};
+    static const int MAX_CONNECTIONS = 50;
 };
