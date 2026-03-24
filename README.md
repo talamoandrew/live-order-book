@@ -2,6 +2,8 @@
 
 A real-time cryptocurrency order book terminal built in C++ and React. The backend connects directly to the Binance US Level 2 depth WebSocket feed, maintains a live bid/ask order book, and streams structured updates to browser clients. The frontend renders a live candlestick chart alongside a real-time bid/ask ladder with latency metrics — styled as a dark trading terminal.
 
+Live at [https://live-order-book.vercel.app/]
+
 > **Note on data source:** This project was originally designed to consume live US stock and ETF order book data. Real-time Level 2 equity data requires paid exchange licensing — no free tier exists for NBBO or individual exchange feeds. Binance US was chosen as the data source because it provides genuine Level 2 order book data (real bids and asks, not simulated) for free with no API key required, and trades 24/7 which eliminates market hours constraints during development.
 
 ---
